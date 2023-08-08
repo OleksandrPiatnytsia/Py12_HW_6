@@ -216,7 +216,7 @@ def insert_data_to_DB():
                     subj_id_tuple = get_query_result(conn, "SELECT id FROM subjects")
 
                     for student_id in students_id_tuple:
-                        for _ in range(MIN_POINTS_COUNT, MAX_POINTS_COUNT):
+                        for _ in range(1, randint(MIN_POINTS_COUNT,MAX_POINTS_COUNT)):
                             sql_expression = """INSERT INTO points(student_id,subject_id, point, exam_date) 
                                                 VALUES(%s,%s,%s,%s);"""
                             insert_data(
