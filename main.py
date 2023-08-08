@@ -3,14 +3,25 @@ import logging
 
 from contextlib import contextmanager
 from psycopg2 import OperationalError, DatabaseError
-from random import randint
+from random import randint, choice
 
 from faker import Faker
 
 fake = Faker("uk_UA")
 
-SUBJECTS = ["Математичний аналіз", "Історія", "Алхімія", "Загальна алгебра", "Квантова механіка"]
+TEACHERS_COUNT = 5
 
+STUDENTS_COUNT = 50
+
+SUBJECTS = ["Математичний аналіз",
+            "Історія",
+            "Алхімія",
+            "Загальна алгебра",
+            "Квантова механіка",
+            "Чисельні методи",
+            "Теорія імовірності"]
+
+GROUPS = ["group 1", "group 2", "group 3"]
 
 @contextmanager
 def create_connection():
@@ -34,7 +45,7 @@ def create_table(conn, sql_expression):
         c.close()
 
 
-def insert_data(conn, sql_expression, params):
+def insert_data(conn, sql_expression:str, params:tuple):
     c = conn.cursor()
     try:
         c.execute(sql_expression, params)
@@ -69,7 +80,7 @@ def create_all_tables():
                 # table creation
                 # groups
                 sql_expression = """CREATE TABLE IF NOT EXISTS groups (
-                                        id INT PRIMARY KEY,
+                                        id SERIAL PRIMARY KEY,
                                         name VARCHAR(10));"""
 
                 create_table(conn, sql_expression)
@@ -94,7 +105,7 @@ def create_all_tables():
 
                 # subjects
                 sql_expression = """CREATE TABLE IF NOT EXISTS subjects (
-                            id INT PRIMARY KEY,
+                            id SERIAL PRIMARY KEY,
                             name VARCHAR(30),
                             teacher_id INT,
                             FOREIGN KEY (teacher_id) REFERENCES teachers (id)
@@ -125,28 +136,50 @@ def create_all_tables():
         logging.error(e)
 
 
-def insert_data():
+def insert_data_to_DB():
     try:
         with create_connection() as conn:
             if conn is not None:
 
                 # insert data
+                # TEACHERS
+                tchr_data = get_query_result(conn, "SELECT id FROM teachers LIMIT 1")
+                if not tchr_data:
 
+                    for i in range(1,TEACHERS_COUNT+1):
+                        sql_expression = """INSERT INTO teachers(name) VALUES(%s);"""
+                        insert_data(conn, sql_expression, (fake.name(),))
+
+
+                # GROUPS
+                grp_data = get_query_result(conn, "SELECT id FROM groups LIMIT 1")
+                if not grp_data:
+
+                    for group in GROUPS:
+                        sql_expression = """INSERT INTO groups(name) VALUES(%s);"""
+                        insert_data(conn, sql_expression, (group,))
+
+
+                # SUBJECTS
                 subj_data = get_query_result(conn, "SELECT id FROM subjects LIMIT 1")
-                if subj_data:
-                    logging.info(subj_data)
-                else:
+                if not subj_data:
+
                     for subject in SUBJECTS:
-                        sql_expression = """INSERT INTO subjects(name) VALUES(%s);"""
-                        insert_data(conn, sql_expression, (subject,))
 
+                        tchr_tuple = get_query_result(conn, "SELECT id FROM teachers")
 
+                        sql_expression = """INSERT INTO subjects(name,teacher_id) VALUES(%s,%s);"""
+                        insert_data(conn, sql_expression, (subject,choice(tchr_tuple)))
 
+                # STUDENTS
+                std_data = get_query_result(conn, "SELECT id FROM students LIMIT 1")
+                if not std_data:
 
+                    for i in range(STUDENTS_COUNT):
+                        groupe_tuple = get_query_result(conn, "SELECT id FROM groups")
 
-
-
-
+                        sql_expression = """INSERT INTO students(name,group_id) VALUES(%s,%s);"""
+                        insert_data(conn, sql_expression, (fake.name(), choice(groupe_tuple)))
 
             else:
                 print("Error! cannot create the database connection.")
@@ -156,3 +189,4 @@ def insert_data():
 
 if __name__ == '__main__':
     create_all_tables()
+    insert_data_to_DB()

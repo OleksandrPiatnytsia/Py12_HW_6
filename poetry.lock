@@ -15,6 +15,19 @@ files = [
 python-dateutil = ">=2.4"
 
 [[package]]
+name = "groups"
+version = "0.1"
+description = "A python library for manipulating groups"
+optional = false
+python-versions = "*"
+files = [
+    {file = "groups-0.1.tar.gz", hash = "sha256:10fc880b6478f8ae917eda9d82fac6656dbe1c85aec6d0231735a1075cda854c"},
+]
+
+[package.dependencies]
+wheel = "*"
+
+[[package]]
 name = "psycopg2"
 version = "2.9.7"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
@@ -59,7 +72,21 @@ files = [
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 
+[[package]]
+name = "wheel"
+version = "0.41.1"
+description = "A built-package format for Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "wheel-0.41.1-py3-none-any.whl", hash = "sha256:473219bd4cbedc62cea0cb309089b593e47c15c4a2531015f94e4e3b9a0f6981"},
+    {file = "wheel-0.41.1.tar.gz", hash = "sha256:12b911f083e876e10c595779709f8a88a59f45aacc646492a67fe9ef796c1b47"},
+]
+
+[package.extras]
+test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "adbec96fae43cd1d2c2df521d4f8ffceab828b6b54269adba0bf023e9534fce5"
+content-hash = "4bb97694d7d31beeb735a6f0817b1cd31fde5f9784231377043abca9b94036b8"
