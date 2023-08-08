@@ -3,7 +3,7 @@ import logging
 
 
 from contextlib import contextmanager
-from psycopg2 import OperationalError
+from psycopg2 import OperationalError, DatabaseError
 from random import randint
 
 from faker import Faker
@@ -57,8 +57,7 @@ def create_all_tables():
                 # groups
                 sql_expression = """CREATE TABLE IF NOT EXISTS groups (
                                         id INT PRIMARY KEY,
-                                        name VARCHAR(10),
-                                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"""
+                                        name VARCHAR(10));"""
 
                 create_table(conn, sql_expression)
 
@@ -66,12 +65,11 @@ def create_all_tables():
                 # students
                 sql_expression = """CREATE TABLE IF NOT EXISTS students (
                 id SERIAL PRIMARY KEY,
-                name VARCHAR(50)),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                name VARCHAR(50),
                 group_id INT,
                 FOREIGN KEY (group_id) REFERENCES groups (id)
                         ON DELETE SET NULL
-                        ON UPDATE CASCADE;"""
+                        ON UPDATE CASCADE);"""
 
                 create_table(conn, sql_expression)
 
@@ -79,8 +77,7 @@ def create_all_tables():
                 # teachers
                 sql_expression = """CREATE TABLE IF NOT EXISTS teachers (
                       id SERIAL PRIMARY KEY,
-                      name VARCHAR(50),
-                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"""
+                      name VARCHAR(50));"""
 
                 create_table(conn, sql_expression)
 
@@ -88,10 +85,10 @@ def create_all_tables():
                 sql_expression = """CREATE TABLE IF NOT EXISTS subjects (
                             id INT PRIMARY KEY,
                             name VARCHAR(30),
-                            teacher_id INT),
+                            teacher_id INT,
                             FOREIGN KEY (teacher_id) REFERENCES teachers (id)
                                  ON DELETE SET NULL
-                                 ON UPDATE CASCADE;"""
+                                 ON UPDATE CASCADE);"""
 
                 create_table(conn, sql_expression)
 
@@ -101,13 +98,13 @@ def create_all_tables():
                             student_id INT,
                             subjects_id INT,
                             point NUMERIC CHECK(point > 0 and point <= 100),
-                            got_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            exam_date TIMESTAMP,
                             FOREIGN KEY (student_id) REFERENCES students (id)
-                                ON DELETE NULL
-                                ON UPDATE CASCADE),
-                            FOREIGN KEY (teacher_id) REFERENCES teachers (id)
                                 ON DELETE SET NULL
-                                ON UPDATE CASCADE;"""
+                                ON UPDATE CASCADE,
+                            FOREIGN KEY (subjects_id) REFERENCES subjects (id)
+                                ON DELETE SET NULL
+                                ON UPDATE CASCADE);"""
 
                 create_table(conn, sql_expression)
 
