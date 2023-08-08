@@ -1,14 +1,15 @@
 import psycopg2
 import logging
 
-
 from contextlib import contextmanager
 from psycopg2 import OperationalError, DatabaseError
 from random import randint
 
 from faker import Faker
 
-SUBJECTS = ["Математичний аналіз","Історія","Алхімія","Загальна алгебра","Квантова механіка"]
+fake = Faker("uk_UA")
+
+SUBJECTS = ["Математичний аналіз", "Історія", "Алхімія", "Загальна алгебра", "Квантова механіка"]
 
 
 @contextmanager
@@ -20,10 +21,23 @@ def create_connection():
     except OperationalError as err:
         raise RuntimeError(f"Failed to connect: {err}")
 
+
 def create_table(conn, sql_expression):
     c = conn.cursor()
     try:
         c.execute(sql_expression)
+        conn.commit()
+    except DatabaseError as e:
+        logging.error(e)
+        conn.rollback()
+    finally:
+        c.close()
+
+
+def insert_data(conn, sql_expression, params):
+    c = conn.cursor()
+    try:
+        c.execute(sql_expression, params)
         conn.commit()
     except DatabaseError as e:
         logging.error(e)
@@ -48,7 +62,6 @@ def get_query_result(conn, sql_expression):
 
 
 def create_all_tables():
-
     try:
         with create_connection() as conn:
             if conn is not None:
@@ -61,7 +74,6 @@ def create_all_tables():
 
                 create_table(conn, sql_expression)
 
-
                 # students
                 sql_expression = """CREATE TABLE IF NOT EXISTS students (
                 id SERIAL PRIMARY KEY,
@@ -72,7 +84,6 @@ def create_all_tables():
                         ON UPDATE CASCADE);"""
 
                 create_table(conn, sql_expression)
-
 
                 # teachers
                 sql_expression = """CREATE TABLE IF NOT EXISTS teachers (
@@ -113,6 +124,34 @@ def create_all_tables():
     except RuntimeError as e:
         logging.error(e)
 
+
+def insert_data():
+    try:
+        with create_connection() as conn:
+            if conn is not None:
+
+                # insert data
+
+                subj_data = get_query_result(conn, "SELECT id FROM subjects LIMIT 1")
+                if subj_data:
+                    logging.info(subj_data)
+                else:
+                    for subject in SUBJECTS:
+                        sql_expression = """INSERT INTO subjects(name) VALUES(%s);"""
+                        insert_data(conn, sql_expression, (subject,))
+
+
+
+
+
+
+
+
+
+            else:
+                print("Error! cannot create the database connection.")
+    except RuntimeError as e:
+        logging.error(e)
 
 
 if __name__ == '__main__':
