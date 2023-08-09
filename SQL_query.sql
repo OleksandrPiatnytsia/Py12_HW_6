@@ -69,8 +69,65 @@ where
 
 
 7.Знайти оцінки студентів в окремій групі з певного предмета.
+select
+	stud.name as stud_name,
+	sub.name as sub_name,
+	po.point as point
+from points as po
+left join students as stud
+	on po.student_id = stud.id
+left join subjects as sub
+	on po.subject_id = sub.id
+left join groups as g
+	on stud.group_id = g.id
+where
+	po.subject_id = 3 and
+	stud.group_id = 2
 
 
 8.Знайти середній бал, який ставить певний викладач зі своїх предметів.
+select
+	avg(po.point) as AVG_point
+from points as po
+left join subjects as sub
+	on po.subject_id = sub.id
+left join teachers as tchr
+	on sub.teacher_id = tchr.id
+where
+	sub.teacher_id = 2
+
+
 9.Знайти список курсів, які відвідує студент.
+select
+	stud.name,
+	sub.name
+from points as po
+left join subjects as sub
+	on po.subject_id = sub.id
+left join students as stud
+	on po.student_id = stud.id
+where
+	po.student_id = 1
+group by
+	stud.name,
+	sub.name
+
 10.Список курсів, які певному студенту читає певний викладач.
+select
+	stud.name,
+	sub.name,
+	tchr.name
+from points as po
+left join subjects as sub
+	on po.subject_id = sub.id
+left join teachers as tchr
+	on sub.teacher_id = tchr.id
+left join students as stud
+	on po.student_id = stud.id
+where
+	po.student_id = 1 and sub.teacher_id = 1
+group by
+	stud.name,
+	sub.name,
+	tchr.name
+
